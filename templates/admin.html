@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Panel</title>
+</head>
+<body>
+    <h1>Admin Panel</h1>
+    <p>Welcome, {{ current_user.username }}!</p>
+    <a href="{{ url_for('logout') }}">Logout</a>
+
+    <h2>All Courses</h2>
+    <table border="1">
+        <tr>
+            <th>Course Name</th>
+            <th>Department</th>
+            <th>Credits</th>
+            <th>Instructor</th>
+            <th>Action</th>
+        </tr>
+        {% for course in courses %}
+        <tr>
+            <td>{{ course.CourseName }}</td>
+            <td>{{ course.Department }}</td>
+            <td>{{ course.Credits }}</td>
+            <td>{{ course.InstructorID }}</td>
+            <td>
+                <a href="{{ url_for('edit_course', course_id=course.CourseID) }}">Edit</a> |
+                <a href="{{ url_for('delete_course', course_id=course.CourseID) }}">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h2>Add New Course</h2>
+    <form method="post" action="{{ url_for('add_course') }}">
+        <label>Course Name:</label><br>
+        <input type="text" name="course_name"><br>
+
+        <label>Department:</label><br>
+        <input type="text" name="department"><br>
+
+        <label>Credits:</label><br>
+        <input type="number" name="credits"><br>
+
+        <label>Instructor ID:</label><br>
+        <input type="number" name="instructor_id"><br><br>
+
+        <input type="submit" value="Add Course">
+    </form>
+
+    <h2>Instructors List</h2>
+    <ul>
+        {% for instructor in instructors %}
+            <li>{{ instructor.Name }} - {{ instructor.Department }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

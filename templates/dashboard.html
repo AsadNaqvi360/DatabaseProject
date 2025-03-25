@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Your Dashboard</title>
+</head>
+<body>
+    <h2>Welcome, {{ current_user.username }}</h2>
+    <a href="{{ url_for('add') }}">Add New Item</a> |
+    <a href="{{ url_for('logout') }}">Logout</a>
+    
+    <h3>Your Inventory</h3>
+    <table border="1">
+        <tr>
+            <th>Name</th>
+            <th>Supplier</th>
+            <th>Date Received</th>
+            <th>Description</th>
+            <th>Cost</th>
+            <th>Quantity</th>
+            <th>Actions</th>
+        </tr>
+        {% for item in items %}
+        <tr>
+            <td>{{ item.item_name }}</td>
+            <td>{{ item.supplier }}</td>
+            <td>{{ item.date_received }}</td>
+            <td>{{ item.description }}</td>
+            <td>{{ item.cost }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>
+                <a href="{{ url_for('edit', item_id=item.id) }}">Edit</a> |
+                <a href="{{ url_for('delete', item_id=item.id) }}">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
