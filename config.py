@@ -1,8 +1,8 @@
 import os
 
 DB_CONFIG = {
-    'host': 'localhost',
+    'host': 'Naqvi.mysql.pythonanywhere-services.com',  # ← CHANGED
     'user': 'Naqvi',  # your PythonAnywhere username
-    'password': 'Happy657063!',
+    'password': 'INFRPROJECT123',
     'database': 'Naqvi$infr'  # your full DB name with $
 }
