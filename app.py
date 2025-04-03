@@ -18,73 +18,46 @@ cursor = db.cursor(dictionary=True)
 def index():
     return render_template('index.html')
 
-# Student-facing page to view and add/drop courses
 @app.route('/add_courses', methods=['GET', 'POST'])
 def add_courses():
     cursor.execute("SELECT * FROM courses")
     courses = cursor.fetchall()
-
     if request.method == 'POST':
         course_id = request.form['course']
         flash(f'Course {course_id} submitted successfully!')
         return redirect(url_for('add_courses'))
-
     return render_template('add_courses.html', courses=courses)
 
-# General course viewing page
 @app.route('/courses', methods=['GET', 'POST'])
 def courses():
     cursor.execute("SELECT * FROM courses")
     courses = cursor.fetchall()
-
     if request.method == 'POST':
         course_id = request.form['course']
         flash(f'Course {course_id} submitted successfully!')
         return redirect(url_for('courses'))
-
     return render_template('courses.html', courses=courses)
 
-# Admin panel
 @app.route('/admin')
 def admin_panel():
     cursor.execute("SELECT * FROM courses")
     courses = cursor.fetchall()
-
     cursor.execute("SELECT * FROM users WHERE role = 'instructor'")
     instructors = cursor.fetchall()
-
     return render_template('admin.html', courses=courses, instructors=instructors)
 
-# Instructor dashboard
 @app.route('/instructor')
 def instructor_dashboard():
     cursor.execute("SELECT * FROM courses WHERE InstructorID IS NOT NULL")
     courses = cursor.fetchall()
     return render_template('instructor.html', courses=courses)
 
-# Empty for now
-@app.route('/grades',  methods=['GET'])
-def get_student_grades(self, student_id):
-        try:
-            sql = """
-            SELECT c.CourseName, g.Grade
-            FROM Grades g
-            JOIN Courses c ON g.CourseID = c.CourseID
-            WHERE g.StudentID = %s
-            """
-            self.cur.execute(sql, (student_id,))
-            result = self.cur.fetchall()
-        finally:
-            self.cur.close()
-        return result
+@app.route('/grades')
 def grades():
-    if current_user.role != 'student':
-        flash('Access denied.')
-        return redirect(url_for('index'))
-        grades = db.get_student_grades(current_user.id)
-        return render_template('grades.html')
+    # Placeholder until login is implemented
+    flash("Login system not implemented. Can't fetch user grades.")
+    return redirect(url_for('index'))
 
-# Placeholder to avoid error in navbar/admin actions
 @app.route('/edit_course/<int:course_id>')
 def edit_course(course_id):
     return f"Edit course {course_id} - Functionality coming soon."
@@ -100,6 +73,20 @@ def submit():
 @app.route('/view_students/<int:course_id>')
 def view_students(course_id):
     return f"Viewing students for course {course_id} - Functionality coming soon."
+
+@app.route('/add_course', methods=['POST'])
+def add_course():
+    name = request.form['course_name']
+    dept = request.form['department']
+    credits = request.form['credits']
+    instructor = request.form['instructor_id']
+    cursor.execute("""
+        INSERT INTO courses (CourseName, Department, Credits, InstructorID)
+        VALUES (%s, %s, %s, %s)
+    """, (name, dept, credits, instructor))
+    db.commit()
+    flash("Course added successfully.")
+    return redirect(url_for('admin_panel'))
 
 if __name__ == '__main__':
     app.run(debug=True)
