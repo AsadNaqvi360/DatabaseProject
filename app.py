@@ -18,26 +18,20 @@ cursor = db.cursor(dictionary=True)
 def index():
     return render_template('index.html')
 
-@app.route('/add', methods=['GET', 'POST'])
-def add():
+# Student-facing page to view and add/drop courses
+@app.route('/add_courses', methods=['GET', 'POST'])
+def add_courses():
+    cursor.execute("SELECT * FROM courses")
+    courses = cursor.fetchall()
+
     if request.method == 'POST':
-        item_name = request.form['item_name']
-        supplier = request.form['supplier']
-        date_received = request.form['date_received']
-        description = request.form['description']
-        cost = request.form['cost']
-        quantity = request.form['quantity']
+        course_id = request.form['course']
+        flash(f'Course {course_id} submitted successfully!')
+        return redirect(url_for('add_courses'))
 
-        cursor.execute("""
-            INSERT INTO inventory (item_name, supplier, date_received, description, cost, quantity)
-            VALUES (%s, %s, %s, %s, %s, %s)
-        """, (item_name, supplier, date_received, description, cost, quantity))
-        db.commit()
-        flash('Item added successfully!')
-        return redirect(url_for('add'))
+    return render_template('add_courses.html', courses=courses)
 
-    return render_template('add.html')
-
+# General course viewing page
 @app.route('/courses', methods=['GET', 'POST'])
 def courses():
     cursor.execute("SELECT * FROM courses")
@@ -50,6 +44,7 @@ def courses():
 
     return render_template('courses.html', courses=courses)
 
+# Admin panel
 @app.route('/admin')
 def admin_panel():
     cursor.execute("SELECT * FROM courses")
@@ -60,25 +55,26 @@ def admin_panel():
 
     return render_template('admin.html', courses=courses, instructors=instructors)
 
+# Instructor dashboard
 @app.route('/instructor')
 def instructor_dashboard():
-    # Replace this with proper filtering if you have session/auth logic later
     cursor.execute("SELECT * FROM courses WHERE InstructorID IS NOT NULL")
     courses = cursor.fetchall()
     return render_template('instructor.html', courses=courses)
 
+# Empty for now
 @app.route('/grades')
 def grades():
     return render_template('grades.html')
 
-# Placeholder routes used in admin.html to avoid URL errors
+# Placeholder to avoid error in navbar/admin actions
 @app.route('/edit_course/<int:course_id>')
 def edit_course(course_id):
-    return f"Edit page for course {course_id} (not implemented yet)"
+    return f"Edit course {course_id} - Functionality coming soon."
 
 @app.route('/delete_course/<int:course_id>')
 def delete_course(course_id):
-    return f"Delete confirmation for course {course_id} (not implemented yet)"
+    return f"Delete course {course_id} - Functionality coming soon."
 
 @app.route('/submit', methods=['POST'])
 def submit():
@@ -86,7 +82,7 @@ def submit():
 
 @app.route('/view_students/<int:course_id>')
 def view_students(course_id):
-    return f"View students for course {course_id} (not implemented yet)"
+    return f"Viewing students for course {course_id} - Functionality coming soon."
 
 if __name__ == '__main__':
     app.run(debug=True)
