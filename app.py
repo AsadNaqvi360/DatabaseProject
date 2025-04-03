@@ -63,9 +63,26 @@ def instructor_dashboard():
     return render_template('instructor.html', courses=courses)
 
 # Empty for now
-@app.route('/grades')
+@app.route('/grades',  methods=['GET'])
+def get_student_grades(self, student_id):
+        try:
+            sql = """
+            SELECT c.CourseName, g.Grade
+            FROM Grades g
+            JOIN Courses c ON g.CourseID = c.CourseID
+            WHERE g.StudentID = %s
+            """
+            self.cur.execute(sql, (student_id,))
+            result = self.cur.fetchall()
+        finally:
+            self.cur.close()
+        return result
 def grades():
-    return render_template('grades.html')
+    if current_user.role != 'student':
+        flash('Access denied.')
+        return redirect(url_for('index'))
+        grades = db.get_student_grades(current_user.id)
+        return render_template('grades.html')
 
 # Placeholder to avoid error in navbar/admin actions
 @app.route('/edit_course/<int:course_id>')
