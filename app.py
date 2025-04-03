@@ -1,4 +1,3 @@
-#Hi - Kevin
 from flask import Flask, render_template, request, redirect, url_for, flash
 import mysql.connector
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
@@ -111,6 +110,49 @@ def dashboard():
     courses = cursor.fetchall()
     return render_template('dashboard.html', courses=courses)
 
+#Student Course Registration
+def selectCourses(self):
+        try:
+            self.cur.execute("SELECT * FROM Courses")
+            result = self.cur.fetchall()
+        finally:
+            self.cur.close()
+        return result
+
+app = Flask(__name__, template_folder='templates')
+
+@app.route('/course_registration')
+def listCourses():
+    db = Database()
+    courses = db.selectCourses()
+
+    return render_template('courses.html', courses=courses)
+
+#Student Schedule View
+
+def get_student_schedule(self, student_id):
+        try:
+            sql = """
+            SELECT s.StudentID, s.Name, c.CourseID, c.CourseName, c.Credits, c.InstructorID
+            FROM Students s
+            JOIN StudentCourses sc ON s.StudentID = sc.StudentID
+            JOIN Courses c ON sc.CourseID = c.CourseID
+            WHERE s.StudentID = %s
+            """
+            self.cur.execute(sql, (student_id,))
+            result = self.cur.fetchall()
+        finally:
+            self.cur.close()
+        return result
+
+@app.route('/schedule', methods=['GET', 'POST'])
+def view_schedule():
+    schedule = None
+    if request.method == 'POST':
+        student_id = request.form['student_id']
+        db = Database()
+        schedule = db.get_student_schedule(student_id)
+    return render_template('schedule.html', schedule=schedule)
 # Instructor Dashboard
 @app.route('/instructor')
 @login_required
