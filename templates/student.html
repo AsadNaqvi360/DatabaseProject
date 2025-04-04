@@ -7,8 +7,21 @@
     {% include 'navbar.html' %}
     <h1>Student Portal</h1>
 
+    <!-- Student Simulation -->
+    <form method="get" action="{{ url_for('student_view') }}">
+        <label>Select Student:</label>
+        <select name="student_id" onchange="this.form.submit()">
+            {% for student in students %}
+                <option value="{{ student.id }}" {% if student.id == selected_student_id %}selected{% endif %}>
+                    {{ student.username }}
+                </option>
+            {% endfor %}
+        </select>
+    </form>
+
     <h2>Add or Drop Courses</h2>
-    <form method="post">
+    <form method="post" action="{{ url_for('student_view', student_id=selected_student_id) }}">
+        <input type="hidden" name="student_id" value="{{ selected_student_id }}">
         <label for="course_id">Select a Course:</label>
         <select name="course_id" id="course_id">
             {% for course in all_courses %}
@@ -36,7 +49,7 @@
             {% for grade in grades %}
             <tr>
                 <td>{{ grade.CourseName }}</td>
-                <td>{{ grade.Grade }}</td>
+                <td>{{ grade.Grade if grade.Grade else 'N/A' }}</td>
             </tr>
             {% endfor %}
         </table>
