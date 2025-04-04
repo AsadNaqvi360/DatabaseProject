@@ -21,7 +21,6 @@ def index():
 # ----- STUDENT VIEW -----
 @app.route('/student', methods=['GET', 'POST'])
 def student_view():
-    # Fetch all courses for dropdown
     cursor.execute("SELECT * FROM courses")
     all_courses = cursor.fetchall()
 
@@ -39,7 +38,6 @@ def student_view():
         db.commit()
         return redirect(url_for('student_view'))
 
-    # Registered courses
     cursor.execute("""
         SELECT c.CourseName FROM classschedules cs
         JOIN courses c ON cs.CourseID = c.CourseID
@@ -47,7 +45,6 @@ def student_view():
     """, (student_id,))
     registered = cursor.fetchall()
 
-    # Grades
     cursor.execute("""
         SELECT c.CourseName, g.Grade FROM grades g
         JOIN courses c ON g.CourseID = c.CourseID
@@ -101,6 +98,20 @@ def add_course():
     """, (name, dept, credits, instructor_id))
     db.commit()
     flash('Course added successfully.')
+    return redirect(url_for('admin_panel'))
+
+# ✅ NEWLY ADDED ROUTE
+@app.route('/add_instructor', methods=['POST'])
+def add_instructor():
+    name = request.form['name']
+    department = request.form['department']
+
+    cursor.execute("""
+        INSERT INTO users (Name, Department, role)
+        VALUES (%s, %s, 'instructor')
+    """, (name, department))
+    db.commit()
+    flash('Instructor added successfully.')
     return redirect(url_for('admin_panel'))
 
 # Optional placeholders
