@@ -11,7 +11,7 @@
     <form method="post">
         <label for="course_id">Select a Course:</label>
         <select name="course_id" id="course_id">
-            {% for course in courses %}
+            {% for course in all_courses %}
                 <option value="{{ course.CourseID }}">{{ course.CourseName }}</option>
             {% endfor %}
         </select>
@@ -21,7 +21,7 @@
 
     <h3>Your Registered Courses</h3>
     <ul>
-        {% for course in registered_courses %}
+        {% for course in registered %}
             <li>{{ course.CourseName }}</li>
         {% endfor %}
     </ul>
