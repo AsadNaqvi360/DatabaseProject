@@ -1,26 +1,40 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 import mysql.connector
+from mysql.connector import Error, InterfaceError
 from config import DB_CONFIG
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
-# DB setup
-db = mysql.connector.connect(
-    host="Naqvi.mysql.pythonanywhere-services.com",
-    user="Naqvi",
-    password="Happy657063!",
-    database="Naqvi$infr"
-)
-cursor = db.cursor(dictionary=True)
+# Global connection/cursor
+db = None
+cursor = None
+
+def ensure_connection():
+    global db, cursor
+    try:
+        if db is None or not db.is_connected():
+            db = mysql.connector.connect(
+                host="Naqvi.mysql.pythonanywhere-services.com",
+                user="Naqvi",
+                password="Happy657063!",
+                database="Naqvi$infr"
+            )
+            cursor = db.cursor(dictionary=True)
+    except InterfaceError:
+        db.reconnect()
+        cursor = db.cursor(dictionary=True)
 
 @app.route('/')
 def index():
+    ensure_connection()
     return render_template('index.html')
 
 # ----- STUDENT VIEW WITH SIMULATION -----
 @app.route('/student', methods=['GET', 'POST'])
 def student_view():
+    ensure_connection()
+
     cursor.execute("SELECT id, username FROM users WHERE role = 'student' AND username != 'student1'")
     students = cursor.fetchall()
 
@@ -72,6 +86,8 @@ def student_view():
 # ----- INSTRUCTOR VIEW WITH SIMULATION -----
 @app.route('/instructor', methods=['GET'])
 def instructor_view():
+    ensure_connection()
+
     cursor.execute("SELECT id, username FROM users WHERE role = 'instructor' AND username != 'instructor1'")
     instructors = cursor.fetchall()
 
@@ -101,6 +117,8 @@ def instructor_view():
 
 @app.route('/update_grade/<int:course_id>', methods=['POST'])
 def update_grade(course_id):
+    ensure_connection()
+
     student_id = request.form['student_id']
     grade = request.form['grade']
 
@@ -116,6 +134,8 @@ def update_grade(course_id):
 # ----- ADMIN PANEL -----
 @app.route('/admin', methods=['GET'])
 def admin_panel():
+    ensure_connection()
+
     cursor.execute("SELECT * FROM courses")
     courses = cursor.fetchall()
 
@@ -129,6 +149,8 @@ def admin_panel():
 
 @app.route('/add_course', methods=['POST'])
 def add_course():
+    ensure_connection()
+
     name = request.form['course_name']
     dept = request.form['department']
     credits = request.form['credits']
@@ -144,8 +166,9 @@ def add_course():
 
 @app.route('/delete_course', methods=['POST'])
 def delete_course():
-    course_id = request.form['course_id']
+    ensure_connection()
 
+    course_id = request.form['course_id']
     cursor.execute("DELETE FROM classschedules WHERE CourseID = %s", (course_id,))
     cursor.execute("DELETE FROM grades WHERE CourseID = %s", (course_id,))
     cursor.execute("DELETE FROM courses WHERE CourseID = %s", (course_id,))
@@ -155,6 +178,8 @@ def delete_course():
 
 @app.route('/add_instructor', methods=['POST'])
 def add_instructor():
+    ensure_connection()
+
     name = request.form['name']
     department = request.form['department']
 
@@ -162,11 +187,11 @@ def add_instructor():
         INSERT INTO users (username, email, password, role)
         VALUES (%s, %s, %s, 'instructor')
     """, (name, f"{name.lower()}@example.com", 'defaultpass'))
-
     db.commit()
     flash('Instructor added successfully.')
     return redirect(url_for('admin_panel'))
 
+# Optional
 @app.route('/edit_course/<int:course_id>')
 def edit_course(course_id):
     return f"Edit functionality for Course ID {course_id} coming soon."
