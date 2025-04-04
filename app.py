@@ -24,6 +24,9 @@ def student_view():
     cursor.execute("SELECT id, username FROM users WHERE role = 'student' AND username != 'student1'")
     students = cursor.fetchall()
 
+    if not students:
+        return "No students found in the system."
+
     selected_student_id = request.args.get('student_id', default=students[0]['id'], type=int)
 
     cursor.execute("SELECT * FROM courses")
@@ -34,7 +37,7 @@ def student_view():
         course_id = request.form['course_id']
         action = request.form['action']
         if action == 'Add':
-            cursor.execute("INSERT INTO classschedules (StudentID, CourseID) VALUES (%s, %s)", (selected_student_id, course_id))
+            cursor.execute("INSERT IGNORE INTO classschedules (StudentID, CourseID) VALUES (%s, %s)", (selected_student_id, course_id))
             flash('Course added.')
         elif action == 'Drop':
             cursor.execute("DELETE FROM classschedules WHERE StudentID = %s AND CourseID = %s", (selected_student_id, course_id))
@@ -71,6 +74,10 @@ def student_view():
 def instructor_view():
     cursor.execute("SELECT id, username FROM users WHERE role = 'instructor' AND username != 'instructor1'")
     instructors = cursor.fetchall()
+
+    if not instructors:
+        return "No instructors found in the system."
+
     selected_id = request.args.get('instructor_id', default=instructors[0]['id'], type=int)
 
     cursor.execute("SELECT * FROM courses WHERE InstructorID = %s", (selected_id,))
@@ -160,7 +167,6 @@ def add_instructor():
     flash('Instructor added successfully.')
     return redirect(url_for('admin_panel'))
 
-# Optional
 @app.route('/edit_course/<int:course_id>')
 def edit_course(course_id):
     return f"Edit functionality for Course ID {course_id} coming soon."
