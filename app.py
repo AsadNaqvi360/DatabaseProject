@@ -7,10 +7,10 @@ app.secret_key = 'your_secret_key'
 
 # DB setup
 db = mysql.connector.connect(
-    host=DB_CONFIG['host'],
-    user=DB_CONFIG['user'],
-    password=DB_CONFIG['password'],
-    database=DB_CONFIG['database']
+    host="Naqvi.mysql.pythonanywhere-services.com",
+    user="Naqvi",  # your PythonAnywhere username
+    password="Happy657063!",  # <<< fill this in yourself
+    database="Naqvi$infr"  # your full database name
 )
 cursor = db.cursor(dictionary=True)
 
@@ -25,10 +25,8 @@ def student_view():
     cursor.execute("SELECT * FROM courses")
     all_courses = cursor.fetchall()
 
-    # Hardcoded student_id for now (until login exists)
-    student_id = 1
+    student_id = 1  # Hardcoded until login is added
 
-    # Handle add/drop
     if request.method == 'POST':
         course_id = request.form['course_id']
         action = request.form['action']
@@ -64,15 +62,14 @@ def student_view():
 def instructor_view():
     instructor_id = 2  # Simulated
     cursor.execute("SELECT * FROM courses WHERE InstructorID = %s", (instructor_id,))
-    instructor_courses = cursor.fetchall()
-    return render_template('instructor.html', instructor_courses=instructor_courses)
+    courses = cursor.fetchall()
+    return render_template('instructor.html', courses=courses)
 
 @app.route('/update_grade/<int:course_id>', methods=['POST'])
 def update_grade(course_id):
     student_id = request.form['student_id']
     grade = request.form['grade']
 
-    # Insert or update grade
     cursor.execute("""
         INSERT INTO grades (StudentID, CourseID, Grade)
         VALUES (%s, %s, %s)
