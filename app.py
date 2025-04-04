@@ -18,43 +18,54 @@ cursor = db.cursor(dictionary=True)
 def index():
     return render_template('index.html')
 
-# ----- STUDENT VIEW -----
+# ----- STUDENT VIEW WITH SIMULATION -----
 @app.route('/student', methods=['GET', 'POST'])
 def student_view():
+    cursor.execute("SELECT id, username FROM users WHERE role = 'student'")
+    students = cursor.fetchall()
+
+    selected_student_id = request.args.get('student_id', default=students[0]['id'], type=int)
+
     cursor.execute("SELECT * FROM courses")
     all_courses = cursor.fetchall()
 
-    student_id = 1  # Hardcoded student
-
     if request.method == 'POST':
+        selected_student_id = int(request.form['student_id'])
         course_id = request.form['course_id']
         action = request.form['action']
         if action == 'Add':
-            cursor.execute("INSERT INTO classschedules (StudentID, CourseID) VALUES (%s, %s)", (student_id, course_id))
+            cursor.execute("INSERT INTO classschedules (StudentID, CourseID) VALUES (%s, %s)", (selected_student_id, course_id))
             flash('Course added.')
         elif action == 'Drop':
-            cursor.execute("DELETE FROM classschedules WHERE StudentID = %s AND CourseID = %s", (student_id, course_id))
+            cursor.execute("DELETE FROM classschedules WHERE StudentID = %s AND CourseID = %s", (selected_student_id, course_id))
             flash('Course dropped.')
         db.commit()
-        return redirect(url_for('student_view'))
+        return redirect(url_for('student_view', student_id=selected_student_id))
 
     # Registered courses
     cursor.execute("""
         SELECT c.CourseName FROM classschedules cs
         JOIN courses c ON cs.CourseID = c.CourseID
         WHERE cs.StudentID = %s
-    """, (student_id,))
+    """, (selected_student_id,))
     registered = cursor.fetchall()
 
-    # Grades
+    # Grades (show only for registered)
     cursor.execute("""
-        SELECT c.CourseName, g.Grade FROM grades g
+        SELECT c.CourseName, g.Grade
+        FROM grades g
         JOIN courses c ON g.CourseID = c.CourseID
         WHERE g.StudentID = %s
-    """, (student_id,))
+    """, (selected_student_id,))
     grades = cursor.fetchall()
 
-    return render_template('student.html', all_courses=all_courses, registered=registered, grades=grades)
+    return render_template('student.html',
+        all_courses=all_courses,
+        registered=registered,
+        grades=grades,
+        students=students,
+        selected_student_id=selected_student_id
+    )
 
 # ----- INSTRUCTOR VIEW -----
 @app.route('/instructor', methods=['GET'])
@@ -102,7 +113,6 @@ def add_course():
     flash('Course added successfully.')
     return redirect(url_for('admin_panel'))
 
-# ✅ NEW: Add Instructor Route (Fix for Step 1)
 @app.route('/add_instructor', methods=['POST'])
 def add_instructor():
     name = request.form['name']
@@ -112,12 +122,12 @@ def add_instructor():
         INSERT INTO users (username, email, password, role)
         VALUES (%s, %s, %s, 'instructor')
     """, (name, f"{name.lower()}@example.com", 'defaultpass'))
-    
+
     db.commit()
     flash('Instructor added successfully.')
     return redirect(url_for('admin_panel'))
 
-# Optional placeholders
+# Placeholders
 @app.route('/edit_course/<int:course_id>')
 def edit_course(course_id):
     return f"Edit functionality for Course ID {course_id} coming soon."
