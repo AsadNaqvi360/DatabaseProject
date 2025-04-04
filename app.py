@@ -49,11 +49,13 @@ def student_view():
     """, (selected_student_id,))
     registered = cursor.fetchall()
 
+    # ✅ FIXED: Grades only for current registered courses
     cursor.execute("""
         SELECT c.CourseName, g.Grade
-        FROM grades g
-        JOIN courses c ON g.CourseID = c.CourseID
-        WHERE g.StudentID = %s
+        FROM classschedules cs
+        JOIN courses c ON cs.CourseID = c.CourseID
+        LEFT JOIN grades g ON g.CourseID = c.CourseID AND g.StudentID = cs.StudentID
+        WHERE cs.StudentID = %s
     """, (selected_student_id,))
     grades = cursor.fetchall()
 
