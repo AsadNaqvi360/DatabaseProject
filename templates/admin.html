@@ -20,7 +20,13 @@
             <td>{{ course.CourseName }}</td>
             <td>{{ course.Department }}</td>
             <td>{{ course.Credits }}</td>
-            <td>{{ course.InstructorID }}</td>
+            <td>
+                {% for instructor in instructors %}
+                    {% if instructor.id == course.InstructorID %}
+                        {{ instructor.username }}
+                    {% endif %}
+                {% endfor %}
+            </td>
         </tr>
         {% endfor %}
     </table>
@@ -36,10 +42,26 @@
         <label>Credits:</label><br>
         <input type="number" name="credits" required><br>
 
-        <label>Instructor ID:</label><br>
-        <input type="number" name="instructor_id" required><br><br>
+        <label>Assign Instructor:</label><br>
+        <select name="instructor_id" required>
+            <option value="">-- Select Instructor --</option>
+            {% for instructor in instructors %}
+                <option value="{{ instructor.id }}">{{ instructor.username }}</option>
+            {% endfor %}
+        </select><br><br>
 
         <input type="submit" value="Add Course">
+    </form>
+
+    <h2>Remove Course</h2>
+    <form method="post" action="{{ url_for('delete_course') }}">
+        <label>Select Course to Remove:</label><br>
+        <select name="course_id" required>
+            {% for course in courses %}
+                <option value="{{ course.CourseID }}">{{ course.CourseName }}</option>
+            {% endfor %}
+        </select><br><br>
+        <input type="submit" value="Remove Course">
     </form>
 
     <h2>Add New Instructor</h2>
@@ -56,7 +78,7 @@
     <h2>Instructor List</h2>
     <ul>
         {% for instructor in instructors %}
-            <li>{{ instructor.Name }} - {{ instructor.Department }}</li>
+            <li>{{ instructor.username }}</li>
         {% endfor %}
     </ul>
 </body>

@@ -42,7 +42,6 @@ def student_view():
         db.commit()
         return redirect(url_for('student_view', student_id=selected_student_id))
 
-    # Registered courses
     cursor.execute("""
         SELECT c.CourseName FROM classschedules cs
         JOIN courses c ON cs.CourseID = c.CourseID
@@ -50,7 +49,6 @@ def student_view():
     """, (selected_student_id,))
     registered = cursor.fetchall()
 
-    # Grades (show only for registered)
     cursor.execute("""
         SELECT c.CourseName, g.Grade
         FROM grades g
@@ -67,19 +65,16 @@ def student_view():
         selected_student_id=selected_student_id
     )
 
-# ----- INSTRUCTOR VIEW WITH SIMULATION + STUDENTS -----
+# ----- INSTRUCTOR VIEW WITH SIMULATION -----
 @app.route('/instructor', methods=['GET'])
 def instructor_view():
-    # All instructors for dropdown
     cursor.execute("SELECT id, username FROM users WHERE role = 'instructor'")
     instructors = cursor.fetchall()
     selected_id = request.args.get('instructor_id', default=instructors[0]['id'], type=int)
 
-    # Courses taught by this instructor
     cursor.execute("SELECT * FROM courses WHERE InstructorID = %s", (selected_id,))
     courses = cursor.fetchall()
 
-    # For each course, fetch students + their grades
     for course in courses:
         cursor.execute("""
             SELECT u.id, u.username, g.Grade
@@ -134,6 +129,18 @@ def add_course():
     flash('Course added successfully.')
     return redirect(url_for('admin_panel'))
 
+@app.route('/delete_course', methods=['POST'])
+def delete_course():
+    course_id = request.form['course_id']
+
+    # Clean up foreign key dependencies first
+    cursor.execute("DELETE FROM classschedules WHERE CourseID = %s", (course_id,))
+    cursor.execute("DELETE FROM grades WHERE CourseID = %s", (course_id,))
+    cursor.execute("DELETE FROM courses WHERE CourseID = %s", (course_id,))
+    db.commit()
+    flash('Course deleted successfully.')
+    return redirect(url_for('admin_panel'))
+
 @app.route('/add_instructor', methods=['POST'])
 def add_instructor():
     name = request.form['name']
@@ -148,14 +155,10 @@ def add_instructor():
     flash('Instructor added successfully.')
     return redirect(url_for('admin_panel'))
 
-# Optional placeholders
+# Optional
 @app.route('/edit_course/<int:course_id>')
 def edit_course(course_id):
     return f"Edit functionality for Course ID {course_id} coming soon."
-
-@app.route('/delete_course/<int:course_id>')
-def delete_course(course_id):
-    return f"Delete functionality for Course ID {course_id} coming soon."
 
 @app.route('/view_students/<int:course_id>')
 def view_students(course_id):
