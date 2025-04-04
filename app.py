@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 import mysql.connector
-from mysql.connector import Error, InterfaceError
+from mysql.connector import Error, InterfaceError, IntegrityError
 from config import DB_CONFIG
 
 app = Flask(__name__)
@@ -51,10 +51,19 @@ def student_view():
         course_id = request.form['course_id']
         action = request.form['action']
         if action == 'Add':
-            cursor.execute("INSERT IGNORE INTO classschedules (StudentID, CourseID) VALUES (%s, %s)", (selected_student_id, course_id))
-            flash('Course added.')
+            try:
+                cursor.execute(
+                    "INSERT INTO classschedules (StudentID, CourseID) VALUES (%s, %s)",
+                    (selected_student_id, course_id)
+                )
+                flash('Course added.')
+            except IntegrityError:
+                flash('Student already registered for this course.')
         elif action == 'Drop':
-            cursor.execute("DELETE FROM classschedules WHERE StudentID = %s AND CourseID = %s", (selected_student_id, course_id))
+            cursor.execute(
+                "DELETE FROM classschedules WHERE StudentID = %s AND CourseID = %s",
+                (selected_student_id, course_id)
+            )
             flash('Course dropped.')
         db.commit()
         return redirect(url_for('student_view', student_id=selected_student_id))
@@ -156,12 +165,15 @@ def add_course():
     credits = request.form['credits']
     instructor_id = request.form['instructor_id']
 
-    cursor.execute("""
-        INSERT INTO courses (CourseName, Department, Credits, InstructorID)
-        VALUES (%s, %s, %s, %s)
-    """, (name, dept, credits, instructor_id))
-    db.commit()
-    flash('Course added successfully.')
+    try:
+        cursor.execute("""
+            INSERT INTO courses (CourseName, Department, Credits, InstructorID)
+            VALUES (%s, %s, %s, %s)
+        """, (name, dept, credits, instructor_id))
+        db.commit()
+        flash('Course added successfully.')
+    except IntegrityError:
+        flash('Course already exists for this instructor.')
     return redirect(url_for('admin_panel'))
 
 @app.route('/delete_course', methods=['POST'])
