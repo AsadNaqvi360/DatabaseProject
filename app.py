@@ -21,7 +21,7 @@ def index():
 # ----- STUDENT VIEW WITH SIMULATION -----
 @app.route('/student', methods=['GET', 'POST'])
 def student_view():
-    cursor.execute("SELECT id, username FROM users WHERE role = 'student'")
+    cursor.execute("SELECT id, username FROM users WHERE role = 'student' AND username != 'student1'")
     students = cursor.fetchall()
 
     selected_student_id = request.args.get('student_id', default=students[0]['id'], type=int)
@@ -68,7 +68,7 @@ def student_view():
 # ----- INSTRUCTOR VIEW WITH SIMULATION -----
 @app.route('/instructor', methods=['GET'])
 def instructor_view():
-    cursor.execute("SELECT id, username FROM users WHERE role = 'instructor'")
+    cursor.execute("SELECT id, username FROM users WHERE role = 'instructor' AND username != 'instructor1'")
     instructors = cursor.fetchall()
     selected_id = request.args.get('instructor_id', default=instructors[0]['id'], type=int)
 
@@ -110,7 +110,7 @@ def update_grade(course_id):
 def admin_panel():
     cursor.execute("SELECT * FROM courses")
     courses = cursor.fetchall()
-    cursor.execute("SELECT * FROM users WHERE role = 'instructor'")
+    cursor.execute("SELECT * FROM users WHERE role = 'instructor' AND username != 'instructor1'")
     instructors = cursor.fetchall()
     return render_template('admin.html', courses=courses, instructors=instructors)
 
@@ -133,7 +133,6 @@ def add_course():
 def delete_course():
     course_id = request.form['course_id']
 
-    # Clean up foreign key dependencies first
     cursor.execute("DELETE FROM classschedules WHERE CourseID = %s", (course_id,))
     cursor.execute("DELETE FROM grades WHERE CourseID = %s", (course_id,))
     cursor.execute("DELETE FROM courses WHERE CourseID = %s", (course_id,))
