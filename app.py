@@ -49,13 +49,12 @@ def student_view():
     """, (selected_student_id,))
     registered = cursor.fetchall()
 
-    # ✅ FIXED: Grades only for current registered courses
     cursor.execute("""
         SELECT c.CourseName, g.Grade
-        FROM classschedules cs
-        JOIN courses c ON cs.CourseID = c.CourseID
-        LEFT JOIN grades g ON g.CourseID = c.CourseID AND g.StudentID = cs.StudentID
-        WHERE cs.StudentID = %s
+        FROM grades g
+        JOIN courses c ON g.CourseID = c.CourseID
+        JOIN classschedules cs ON cs.CourseID = c.CourseID AND cs.StudentID = g.StudentID
+        WHERE g.StudentID = %s
     """, (selected_student_id,))
     grades = cursor.fetchall()
 
@@ -112,9 +111,14 @@ def update_grade(course_id):
 def admin_panel():
     cursor.execute("SELECT * FROM courses")
     courses = cursor.fetchall()
+
     cursor.execute("SELECT * FROM users WHERE role = 'instructor' AND username != 'instructor1'")
     instructors = cursor.fetchall()
-    return render_template('admin.html', courses=courses, instructors=instructors)
+
+    cursor.execute("SELECT * FROM departments")
+    departments = cursor.fetchall()
+
+    return render_template('admin.html', courses=courses, instructors=instructors, departments=departments)
 
 @app.route('/add_course', methods=['POST'])
 def add_course():

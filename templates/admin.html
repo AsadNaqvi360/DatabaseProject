@@ -37,31 +37,24 @@
         <input type="text" name="course_name" required><br>
 
         <label>Department:</label><br>
-        <input type="text" name="department" required><br>
+        <select name="department" required>
+            {% for dept in departments %}
+                <option value="{{ dept.Name }}">{{ dept.Name }}</option>
+            {% endfor %}
+        </select><br>
 
         <label>Credits:</label><br>
         <input type="number" name="credits" required><br>
 
         <label>Assign Instructor:</label><br>
         <select name="instructor_id" required>
-            <option value="">-- Select Instructor --</option>
+            <option disabled selected value="">-- Select Instructor --</option>
             {% for instructor in instructors %}
                 <option value="{{ instructor.id }}">{{ instructor.username }}</option>
             {% endfor %}
         </select><br><br>
 
         <input type="submit" value="Add Course">
-    </form>
-
-    <h2>Remove Course</h2>
-    <form method="post" action="{{ url_for('delete_course') }}">
-        <label>Select Course to Remove:</label><br>
-        <select name="course_id" required>
-            {% for course in courses %}
-                <option value="{{ course.CourseID }}">{{ course.CourseName }}</option>
-            {% endfor %}
-        </select><br><br>
-        <input type="submit" value="Remove Course">
     </form>
 
     <h2>Add New Instructor</h2>
