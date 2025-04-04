@@ -8,9 +8,9 @@ app.secret_key = 'your_secret_key'
 # DB setup
 db = mysql.connector.connect(
     host="Naqvi.mysql.pythonanywhere-services.com",
-    user="Naqvi",  # your PythonAnywhere username
-    password="Happy657063!",  # <<< fill this in yourself
-    database="Naqvi$infr"  # your full database name
+    user="Naqvi",
+    password="Happy657063!",
+    database="Naqvi$infr"
 )
 cursor = db.cursor(dictionary=True)
 
@@ -24,7 +24,7 @@ def student_view():
     cursor.execute("SELECT * FROM courses")
     all_courses = cursor.fetchall()
 
-    student_id = 1  # Hardcoded until login is added
+    student_id = 1  # Hardcoded student
 
     if request.method == 'POST':
         course_id = request.form['course_id']
@@ -38,6 +38,7 @@ def student_view():
         db.commit()
         return redirect(url_for('student_view'))
 
+    # Registered courses
     cursor.execute("""
         SELECT c.CourseName FROM classschedules cs
         JOIN courses c ON cs.CourseID = c.CourseID
@@ -45,6 +46,7 @@ def student_view():
     """, (student_id,))
     registered = cursor.fetchall()
 
+    # Grades
     cursor.execute("""
         SELECT c.CourseName, g.Grade FROM grades g
         JOIN courses c ON g.CourseID = c.CourseID
@@ -57,7 +59,7 @@ def student_view():
 # ----- INSTRUCTOR VIEW -----
 @app.route('/instructor', methods=['GET'])
 def instructor_view():
-    instructor_id = 2  # Simulated
+    instructor_id = 2  # Simulated instructor
     cursor.execute("SELECT * FROM courses WHERE InstructorID = %s", (instructor_id,))
     courses = cursor.fetchall()
     return render_template('instructor.html', courses=courses)
@@ -100,16 +102,17 @@ def add_course():
     flash('Course added successfully.')
     return redirect(url_for('admin_panel'))
 
-# ✅ NEWLY ADDED ROUTE
+# ✅ NEW: Add Instructor Route (Fix for Step 1)
 @app.route('/add_instructor', methods=['POST'])
 def add_instructor():
     name = request.form['name']
     department = request.form['department']
 
     cursor.execute("""
-        INSERT INTO users (Name, Department, role)
-        VALUES (%s, %s, 'instructor')
-    """, (name, department))
+        INSERT INTO users (username, email, password, role)
+        VALUES (%s, %s, %s, 'instructor')
+    """, (name, f"{name.lower()}@example.com", 'defaultpass'))
+    
     db.commit()
     flash('Instructor added successfully.')
     return redirect(url_for('admin_panel'))
