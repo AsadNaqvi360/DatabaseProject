@@ -67,13 +67,34 @@ def student_view():
         selected_student_id=selected_student_id
     )
 
-# ----- INSTRUCTOR VIEW -----
+# ----- INSTRUCTOR VIEW WITH SIMULATION + STUDENTS -----
 @app.route('/instructor', methods=['GET'])
 def instructor_view():
-    instructor_id = 2  # Simulated instructor
-    cursor.execute("SELECT * FROM courses WHERE InstructorID = %s", (instructor_id,))
+    # All instructors for dropdown
+    cursor.execute("SELECT id, username FROM users WHERE role = 'instructor'")
+    instructors = cursor.fetchall()
+    selected_id = request.args.get('instructor_id', default=instructors[0]['id'], type=int)
+
+    # Courses taught by this instructor
+    cursor.execute("SELECT * FROM courses WHERE InstructorID = %s", (selected_id,))
     courses = cursor.fetchall()
-    return render_template('instructor.html', courses=courses)
+
+    # For each course, fetch students + their grades
+    for course in courses:
+        cursor.execute("""
+            SELECT u.id, u.username, g.Grade
+            FROM classschedules cs
+            JOIN users u ON cs.StudentID = u.id
+            LEFT JOIN grades g ON g.StudentID = u.id AND g.CourseID = %s
+            WHERE cs.CourseID = %s
+        """, (course['CourseID'], course['CourseID']))
+        course['students'] = cursor.fetchall()
+
+    return render_template('instructor.html',
+        courses=courses,
+        instructors=instructors,
+        selected_id=selected_id
+    )
 
 @app.route('/update_grade/<int:course_id>', methods=['POST'])
 def update_grade(course_id):
@@ -127,7 +148,7 @@ def add_instructor():
     flash('Instructor added successfully.')
     return redirect(url_for('admin_panel'))
 
-# Placeholders
+# Optional placeholders
 @app.route('/edit_course/<int:course_id>')
 def edit_course(course_id):
     return f"Edit functionality for Course ID {course_id} coming soon."

@@ -7,21 +7,47 @@
     {% include 'navbar.html' %}
     <h1>Instructor Portal</h1>
 
+    <!-- Instructor simulation dropdown -->
+    <form method="get" action="{{ url_for('instructor_view') }}">
+        <label for="instructor_id">Select Instructor:</label>
+        <select name="instructor_id" id="instructor_id" onchange="this.form.submit()">
+            {% for instructor in instructors %}
+                <option value="{{ instructor.id }}" {% if instructor.id == selected_id %}selected{% endif %}>
+                    {{ instructor.username }}
+                </option>
+            {% endfor %}
+        </select>
+    </form>
+
     <h2>Your Courses</h2>
-    <ul>
-        {% for course in courses %}
-            <li>
-                {{ course.CourseName }} (ID: {{ course.CourseID }})
-                <form method="post" action="{{ url_for('update_grade', course_id=course.CourseID) }}">
-                    <input type="hidden" name="course_id" value="{{ course.CourseID }}">
-                    <label>Student ID:</label>
-                    <input type="number" name="student_id" required>
-                    <label>Grade:</label>
-                    <input type="text" name="grade" required>
-                    <input type="submit" value="Update Grade">
-                </form>
-            </li>
-        {% endfor %}
-    </ul>
+    {% for course in courses %}
+        <h3>{{ course.CourseName }} (Course ID: {{ course.CourseID }})</h3>
+        {% if course.students %}
+            <table border="1" cellpadding="5">
+                <tr>
+                    <th>Student ID</th>
+                    <th>Student Name</th>
+                    <th>Grade</th>
+                    <th>Update Grade</th>
+                </tr>
+                {% for student in course.students %}
+                <tr>
+                    <td>{{ student.id }}</td>
+                    <td>{{ student.username }}</td>
+                    <td>{{ student.Grade or 'N/A' }}</td>
+                    <td>
+                        <form method="post" action="{{ url_for('update_grade', course_id=course.CourseID) }}">
+                            <input type="hidden" name="student_id" value="{{ student.id }}">
+                            <input type="text" name="grade" placeholder="Enter grade" required>
+                            <input type="submit" value="Update">
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <p><i>No students enrolled in this course.</i></p>
+        {% endif %}
+    {% endfor %}
 </body>
 </html>
