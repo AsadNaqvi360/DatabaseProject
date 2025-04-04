@@ -1,21 +1,20 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Instructor Dashboard</title>
-</head>
+<head><title>Instructor Portal</title></head>
 <body>
     {% include 'navbar.html' %}
     <h1>Instructor Dashboard</h1>
-    <p>Welcome to your instructor dashboard.</p>
 
     <h2>Your Courses</h2>
-    <ul>
-        {% for course in courses %}
-            <li>
-                {{ course.CourseName }} (ID: {{ course.CourseID }})
-                <a href="{{ url_for('view_students', course_id=course.CourseID) }}">View Students</a>
-            </li>
-        {% endfor %}
-    </ul>
+    {% for course in instructor_courses %}
+        <h3>{{ course.CourseName }}</h3>
+        <form method="post" action="{{ url_for('update_grade', course_id=course.CourseID) }}">
+            <label>Student ID:</label>
+            <input type="number" name="student_id" required>
+            <label>Grade:</label>
+            <input type="text" name="grade" required>
+            <input type="submit" value="Update Grade">
+        </form>
+    {% endfor %}
 </body>
 </html>

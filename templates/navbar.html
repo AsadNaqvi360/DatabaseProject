@@ -1,8 +1,7 @@
+<!-- templates/navbar.html -->
 <nav style="background: #f2f2f2; padding: 10px;">
     <a href="{{ url_for('index') }}">Home</a> |
-    <a href="{{ url_for('admin_panel') }}">Admin</a> |
-    <a href="{{ url_for('instructor_dashboard') }}">Instructor</a> |
-    <a href="{{ url_for('add_courses') }}">Add Courses</a> |
-    <a href="{{ url_for('courses') }}">Courses</a> |
-    <a href="{{ url_for('grades') }}">View Grades</a>
+    <a href="{{ url_for('student_view') }}">Student View</a> |
+    <a href="{{ url_for('instructor_view') }}">Instructor View</a> |
+    <a href="{{ url_for('admin_panel') }}">Admin Panel</a>
 </nav>

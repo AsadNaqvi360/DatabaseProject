@@ -5,9 +5,7 @@
 </head>
 <body>
     {% include 'navbar.html' %}
-
     <h1>Admin Panel</h1>
-    <p>Welcome to the admin panel.</p>
 
     <h2>All Courses</h2>
     <table border="1">
@@ -16,7 +14,6 @@
             <th>Department</th>
             <th>Credits</th>
             <th>Instructor</th>
-            <th>Action</th>
         </tr>
         {% for course in courses %}
         <tr>
@@ -24,10 +21,6 @@
             <td>{{ course.Department }}</td>
             <td>{{ course.Credits }}</td>
             <td>{{ course.InstructorID }}</td>
-            <td>
-                <a href="{{ url_for('edit_course', course_id=course.CourseID) }}">Edit</a> |
-                <a href="{{ url_for('delete_course', course_id=course.CourseID) }}">Delete</a>
-            </td>
         </tr>
         {% endfor %}
     </table>
@@ -35,21 +28,32 @@
     <h2>Add New Course</h2>
     <form method="post" action="{{ url_for('add_course') }}">
         <label>Course Name:</label><br>
-        <input type="text" name="course_name"><br>
+        <input type="text" name="course_name" required><br>
 
         <label>Department:</label><br>
-        <input type="text" name="department"><br>
+        <input type="text" name="department" required><br>
 
         <label>Credits:</label><br>
-        <input type="number" name="credits"><br>
+        <input type="number" name="credits" required><br>
 
         <label>Instructor ID:</label><br>
-        <input type="number" name="instructor_id"><br><br>
+        <input type="number" name="instructor_id" required><br><br>
 
         <input type="submit" value="Add Course">
     </form>
 
-    <h2>Instructors List</h2>
+    <h2>Add New Instructor</h2>
+    <form method="post" action="{{ url_for('add_instructor') }}">
+        <label>Name:</label><br>
+        <input type="text" name="name" required><br>
+
+        <label>Department:</label><br>
+        <input type="text" name="department" required><br>
+
+        <input type="submit" value="Add Instructor">
+    </form>
+
+    <h2>Instructor List</h2>
     <ul>
         {% for instructor in instructors %}
             <li>{{ instructor.Name }} - {{ instructor.Department }}</li>
